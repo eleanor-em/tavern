@@ -21,6 +21,7 @@ const createCharacterTable = () => {
     const query = `
 CREATE TABLE IF NOT EXISTS characters (
     id SERIAL PRIMARY KEY,
+    owner_id INTEGER REFERENCES users(id),
     name VARCHAR(50) NOT NULL,
     strength SMALLINT CHECK (strength > 0),
     dexterity SMALLINT CHECK (dexterity > 0),
@@ -40,7 +41,8 @@ CREATE TABLE IF NOT EXISTS users (
     id SERIAL PRIMARY KEY,
     name VARCHAR(50),
     email VARCHAR(100) UNIQUE,
-    pw_hash CHAR(60)
+    pw_hash CHAR(60),
+    key CHAR(64) UNIQUE
 );
     `;
 
@@ -48,7 +50,7 @@ CREATE TABLE IF NOT EXISTS users (
 }
 
 function createTables() {
-    return createCharacterTable().then(createUserTable);
+    return createUserTable().then(createCharacterTable);
 }
 
 const dbQuery = (query: any, params: any[] = []) => pool.query(query, params);

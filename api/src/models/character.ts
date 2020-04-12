@@ -50,13 +50,29 @@ const genCharacter = (name: string, stats: string[]): Character => {
     };
 }
 
-const createCharacter = (char: Character) => {
+function createCharacter(userId: number, char: Character) {
     const query = `
-INSERT INTO characters(id, name, strength, dexterity, constitution, intelligence, wisdom, charisma)
-VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7);
+INSERT INTO characters(id, owner_id, name, strength, dexterity, constitution, intelligence, wisdom, charisma)
+VALUES (DEFAULT, $1, $2, $3, $4, $5, $6, $7, $8);
     `;
-    return dbQuery(query, [char.name, char.stats.strength, char.stats.dexterity,
+    return dbQuery(query, [userId, char.name, char.stats.strength, char.stats.dexterity,
         char.stats.constitution, char.stats.intelligence, char.stats.wisdom, char.stats.charisma]);
 };
 
-export { Character, StatBlock, genCharacter, createCharacter, validateStats }
+async function getCharacters(userId: number) {
+    const query = `
+SELECT id, name FROM characters WHERE owner_id=$1;
+    `;
+
+    return (await dbQuery(query, [userId])).rows;
+}
+
+async function getCharacterDetails(charId: number) {
+    const query = `
+SELECT * FROM characters WHERE id=$1;
+    `;
+
+    return (await dbQuery(query, [charId])).rows[0];
+}
+
+export { Character, StatBlock, genCharacter, createCharacter, validateStats, getCharacters, getCharacterDetails }
