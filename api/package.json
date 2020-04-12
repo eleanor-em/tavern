@@ -7,7 +7,7 @@
     "build": "tsc",
     "prestart": "npm run build",
     "start": "node -r ts-node/register ./bin/www.ts",
-    "start:watch": "nodemon"
+    "start:watch": "nodemon -e ts"
   },
   "dependencies": {
     "cookie-parser": ">=1.4.4",
