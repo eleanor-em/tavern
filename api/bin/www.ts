@@ -4,9 +4,11 @@
  * Module dependencies.
  */
 
-import { app } from '../app';
-import debug from 'debug';
+import { app, onClose } from '../src/app';
 import http from 'http';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 /**
  * Get port from environment and store in Express.
@@ -25,9 +27,14 @@ const server = http.createServer(app);
  * Listen on provided port, on all network interfaces.
  */
 
-server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
+process.on('SIGINT', () => {
+  server.close();
+});
+server.on('close', onClose);
+
+server.listen(port);
 
 /**
  * Normalize a port into a number, string, or false.
@@ -86,5 +93,5 @@ function onListening() {
   const bind = typeof addr === 'string'
     ? 'pipe ' + addr
     : 'port ' + addr.port;
-  debug('api:server')('Listening on ' + bind);
+  console.log(`Listening on ${bind}.`);
 }
