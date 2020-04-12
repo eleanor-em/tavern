@@ -1,13 +1,17 @@
 import { Pool } from 'pg';
-import { Character } from './character';
+import { Character } from './models/character';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const databaseConfig = {
-    host: 'localhost',
-    port: 5432,
-    database: 'tavern',
-    user: 'tavernuser',
-    password: 'develop'
+    host: process.env.DB_HOST,
+    port: parseInt(process.env.DB_PORT, 10),
+    database: process.env.DB_NAME,
+    user: process.env.DB_USER,
+    password: process.env.DB_PWD
 };
+
 const pool = new Pool(databaseConfig);
 pool.on('connect', () => {
     console.log('Opened PostgreSQL connection.');
@@ -30,16 +34,27 @@ CREATE TABLE IF NOT EXISTS characters (
     return pool.query(query);
 };
 
-const createCharacter = (char: Character) => {
+const createUserTable = () => {
     const query = `
-INSERT INTO characters
-VALUES (${char.name}, ${char.strength}, ${char.dexterity}, ${char.constitution}, ${char.intelligence}, ${char.wisdom}, ${char.charisma});
+CREATE TABLE IF NOT EXISTS users (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50),
+    email VARCHAR(100) UNIQUE,
+    pw_hash CHAR(60)
+);
     `;
-    return pool.query(query);
-};
 
-const closeDb = () => {
+    return pool.query(query);
+}
+
+function createTables() {
+    return createCharacterTable().then(createUserTable);
+}
+
+const dbQuery = (query: any, params: any[] = []) => pool.query(query, params);
+
+const dbClose = () => {
     pool.end();
 }
 
-export { closeDb, createCharacterTable };
+export { dbQuery, dbClose, createTables };

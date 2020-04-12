@@ -6,12 +6,11 @@ import logger from 'morgan';
 import cors from 'cors';
 
 import { apiRouter } from './routes/api';
-import { closeDb, createCharacterTable } from './db';
+import { dbClose, createTables } from './db';
 
-createCharacterTable()
-  .then(res => {
-      // console.log(res);
-      console.log('Created table.');
+const response = createTables()
+  .then(_ => {
+      console.log('Created tables.');
   })
   .catch(err => {
       console.error(err);
@@ -45,7 +44,7 @@ app.use((err: any, req: any, res: any, next: any) => {
 });
 
 const onClose = () => {
-  closeDb();
+  dbClose();
   console.log('\nClosed PostgreSQL connection.');
 }
 
