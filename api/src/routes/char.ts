@@ -6,20 +6,10 @@ import { validateKey } from '../models/user';
 const charRouter = express.Router();
 
 charRouter.post('/', async (req, res) => {
-    const { user, name, strength, dexterity, constitution, intelligence, wisdom, charisma } = req.body;
-    if (!('id' in user)) {
-        res.status(400);
-        res.send({
-            status: false,
-            error: 'missing field `user.id`'
-        });
-    } else if (!('key' in user)) {
-        res.status(400);
-        res.send({
-            status: false,
-            error: 'missing field `user.key`'
-        });
-    } else if (name === null) {
+    const id = parseInt(req.headers['x-api-id'] as string, 10);
+    const key = req.headers['x-api-key'] as string;
+    const { name, strength, dexterity, constitution, intelligence, wisdom, charisma } = req.body;
+    if (name === null) {
         res.status(400);
         res.send({
             status: false,
@@ -71,8 +61,8 @@ charRouter.post('/', async (req, res) => {
             });
         } else {
             try {
-                if (validateKey(user.id, user.key)) {
-                    const dbResponse = await createCharacter(user.id, char);
+                if (await validateKey(id, key)) {
+                    await createCharacter(id, char);
                     res.send({
                         status: true
                     });

@@ -43,10 +43,10 @@ VALUES (DEFAULT, $1, $2, $3, $4);
     return dbQuery(query, [user.name, user.email, user.pwHash, user.key]);
 }
 
-async function authenticate(email: string, pw: string): Promise<string> {
+async function authenticate(email: string, pw: string): Promise<string[]> {
     const query = {
         text: `
-SELECT pw_hash, key FROM users WHERE email=$1
+SELECT pw_hash, id, key, name FROM users WHERE email=$1
         `,
         rowMode: 'array'
     };
@@ -57,10 +57,12 @@ SELECT pw_hash, key FROM users WHERE email=$1
     }
 
     const pwHash = result.rows[0][0];
-    const key = result.rows[0][1];
+    const id = result.rows[0][1];
+    const key = result.rows[0][2];
+    const name = result.rows[0][3];
 
     if (await bcrypt.compare(pepper(pw), pwHash)) {
-        return key;
+        return [id.toString(), key, name];
     } else {
         return null;
     }

@@ -23,7 +23,7 @@ userRouter.post('/', async (req, res) => {
 
 userRouter.get('/:userId/chars', async (req, res) => {
     const id = parseInt(req.params.userId, 10);
-    const { key } = req.body;
+    const key = req.headers['x-api-key'] as string;
 
     if (await validateKey(id, key)) {
         const result = await getCharacters(id);
@@ -40,15 +40,21 @@ userRouter.get('/:userId/chars', async (req, res) => {
     }
 });
 
-userRouter.get('/auth', async (req, res) => {
+// For some unknown reason, the fetch API refuses to allow GET requests to have a body.
+// This means we have to use POST here, even though it makes no sense..
+userRouter.post('/auth', async (req, res) => {
     const { email, pw } = req.body;
 
     try {
-        const key = await authenticate(email, pw);
+        const [id, key, name] = await authenticate(email, pw);
         if (key != null) {
             res.send({
                 status: true,
-                result: key
+                result: {
+                    id,
+                    key,
+                    name
+                }
             });
         } else {
             res.status(403);
